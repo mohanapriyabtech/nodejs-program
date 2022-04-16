@@ -1,18 +1,16 @@
 var mongoose = require("mongoose");
 var bcrypt =require('bcrypt');
-const User=require('../model/schema');
+const User=require('../model/usercreate');
 const jwt= require('jsonwebtoken');
 const nodemailer=require('nodemailer');
 const dotenv =require('dotenv');
-
-
-
-
+const Post=require('../model/postcreate');
 const res = require("express/lib/response");
 const req = require("express/lib/request");
 const { optional } = require("joi");
 
 
+// signup user
 exports.signup = async(req,res)=>{ 
      
         const email = req.body.email;
@@ -52,13 +50,7 @@ exports.signup = async(req,res)=>{
                 };
                  console.log("email sent successfully") ;
 
-               
-                // createdAt:Date.now(),
-                // expiredAt:Date.now()+3600000,
-                
-        
-            
-             mailTransporter.sendMail(mailOptions, (error, info) => {
+                mailTransporter.sendMail(mailOptions, (error, info) => {
                     if (error) {
                         return console.log(error);
                     }
@@ -76,7 +68,7 @@ exports.signup = async(req,res)=>{
             console.log('incorrect password ')
         }
     }
-
+// otp verification
     exports.otpverify = async(req,res)=>{ 
          
         
@@ -91,3 +83,78 @@ exports.signup = async(req,res)=>{
      
    
         }
+
+
+        // login user
+
+
+ exports.login=async(req,res)=>{
+    try {
+  
+       var email = req.body.email;
+       var password = req.body.password;
+  
+       
+  
+       console.log(`${email}  and password is: ${password}`);
+  
+        await User.findOne({email:req.body.email})
+         
+             .then(user=>{   // result stored in user variable
+                bcrypt.compare(password,user.password)
+                 if(user){
+
+                  res.send("login successfully");
+                  console.log("login successfully")
+                 } else{
+                    res.send("error");
+                }
+             })
+
+             } catch(error){
+        res.status(400).send("password not matching");
+          }
+  
+  };
+  
+
+
+
+// post creation
+      exports.postcreation = async(req,res)=> {
+
+        
+await Post.create({
+    title:req.body.title,
+     postedBy:await User.findOne({_id:req.params.id})
+})
+.then(suces=>{console.log(suces)})
+.catch(err=>{console.log(err.message)})
+
+          
+        // if(!title||!body){
+
+        //      return res.json({error:"please add all the fields"});
+
+        // }
+        
+        res.send("ok")
+        //  await User.findById(id)
+        //  .then(user=>{
+        //      console.log(user)
+        //  })
+        //  .then(post=>{
+        // if (post) {
+        //   res.send("You has been successfully posted");
+        // }
+        //  else {
+        //  res.render("post not uploaded");
+        //  }
+        // })
+    
+    }
+    exports.find=async(req,res)=>{
+     await Post.find({name:'theone'}).populate("postedBy")
+     .then(suces=>{console.log(suces)})
+     .catch(err=>{console.log(err.message)})
+    }

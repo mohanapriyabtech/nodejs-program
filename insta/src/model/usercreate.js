@@ -1,10 +1,14 @@
-var mongoose = require("mongoose");
+const mongoose = require("mongoose");
+const Post =require("./postcreate")
 
 var bcrypt=require('bcrypt');
 
 
-const userSchema = new mongoose.Schema({
+const User = new mongoose.Schema({
 
+    // _id:{type:Number ,ref:"Post"
+
+    // },
       email: {
         type: String,required:true,unique:true, match :/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
         
@@ -25,13 +29,13 @@ const userSchema = new mongoose.Schema({
     confirmpassword:{
         type:String, unique:true,maxLength:20, lowercase :true,minLength:5
     },
-    createdAt:Date.now(),
+    
     
     otp:{type:Number}
 });
 
 
-userSchema.pre('save',async function(next){
+User.pre('save',async function(next){
     try{
         const salt =await bcrypt.genSalt(10);
         const hashedpassword=await bcrypt.hash(this.password,salt)
@@ -43,5 +47,4 @@ userSchema.pre('save',async function(next){
         next(error)
     }
 })
-
-module.exports= mongoose.model('userdetails',userSchema);
+module.exports= mongoose.model('userdetails',User);

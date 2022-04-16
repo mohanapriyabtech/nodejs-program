@@ -1,9 +1,10 @@
 var express =require("express");
     
-var mongoose = require("mongoose");
+const mongoose = require("mongoose");
+
+
 
 const route = require("../src/router/router");
-
 
 const app= express();
 
@@ -94,7 +95,7 @@ app.use('/user', route)   //routing url
 
 
 app.listen(7000,() =>{
-console.log("listening  on port 7000");
+console.log("listening  on port 5000");
 
 });
 
