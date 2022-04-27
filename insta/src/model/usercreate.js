@@ -2,15 +2,14 @@ const mongoose = require("mongoose");
 const Post =require("./postcreate")
 
 var bcrypt=require('bcrypt');
+const {ObjectId}=mongoose.Schema.Types;
 
 
 const User = new mongoose.Schema({
 
-    // _id:{type:Number ,ref:"Post"
-
-    // },
+    
       email: {
-        type: String,required:true,unique:true, match :/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        type: String,required:true, match :/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
         
         
     },
@@ -31,7 +30,27 @@ const User = new mongoose.Schema({
     },
     
     
-    otp:{type:Number}
+    otp:{type:Number},
+
+    followers: [{
+        type: ObjectId ,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+        ref:'userdetails',
+        default:0
+    }],
+    following: [{
+        type: ObjectId,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+        ref:'userdetails',
+        default:0
+
+    }],
+    postdetail:[{
+        type: ObjectId,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
+        ref:'postdetails',
+    
+     }],
+    
+    
+
 });
 
 
