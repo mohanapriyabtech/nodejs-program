@@ -8,8 +8,7 @@ var user= require('../controller/control');
 
 var router = express.Router();
 
-router.get('/',(req,res)=>{
-    console.log("get request");
+router.get('/',(req,res)=>{console.log("get request");
     res.send("welcome to homepage");
 });
 

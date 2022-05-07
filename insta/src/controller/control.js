@@ -24,8 +24,8 @@ const decode = require("jsonwebtoken/decode");
         const username = req.body.username;
         const password = req.body.password;
         const confirmpassword=req.body.confirmpassword;
-         if(password == confirmpassword){
-            console.log('password same')
+        if(password == confirmpassword){
+        console.log('password same')
         var otp = `${Math.floor(1000+Math.random()*9000)}`;
         
         console.log(otp);           
@@ -41,7 +41,7 @@ const decode = require("jsonwebtoken/decode");
                 user: 'mohanapriyabtechit2412@gmail.com',
                 pass: 'mohanapriyavidhun'
             }
-        });
+         });
             const mailOptions={
             from:'mohanapriyabtechit2412@gmail.com',
             to:req.body.email,
@@ -73,13 +73,13 @@ const decode = require("jsonwebtoken/decode");
     exports.otpverify = async(req,res)=>{ 
        const otp = await User.findOneAndUpdate({otp:req.params.otp},{$unset:{otp:req.params.otp}})
             
-        if (req.params.otp == otp.otp) {
+         if (req.params.otp == otp.otp) {
           res.send("You has been successfully registered");
-        }
+         }
          else {
          res.render('otp', { msg: 'otp is incorrect' });
          }
-     }
+    }
 
 
         
@@ -96,13 +96,13 @@ const decode = require("jsonwebtoken/decode");
          bcrypt.compare(password,user.password)
             if(user){
             
-              console.log("login successfully")
+             console.log("login successfully")
              jsonwebtoken.sign({User},"secretkey",(err,token)=>{
               res.json({
                 message:"login sucess",
                 token:token
               });
-            })
+             })
 
             } else{
                 res.send("error");
@@ -271,13 +271,13 @@ const decode = require("jsonwebtoken/decode");
       
      const unfollow= await User.findByIdAndUpdate(req.params.userid,{ $pull:{following:followid }},{new: true })
       await User.find({_id:req.params.userid},{"username":1,"email":1,"followers":1,"following":1},{new:true})
-    .then(result=>{  
+    .then(result=> {  
       res.json({
         message:"unfollowed sucessfully",
         result
       });console.log(result)})
     .catch(err=>{console.log(err.message)})
-     }else{
+     }else {
       res.send("This is not the valid id")
       }
   }
