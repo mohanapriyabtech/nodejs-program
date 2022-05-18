@@ -39,7 +39,7 @@ const decode = require("jsonwebtoken/decode");
             service: 'gmail',
             auth: {
                 user: 'mohanapriyabtechit2412@gmail.com',
-                pass: 'mohanapriyavidhun'
+                pass: '*******'
             }
          });
             const mailOptions={
