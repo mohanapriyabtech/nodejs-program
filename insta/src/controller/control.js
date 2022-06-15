@@ -112,11 +112,7 @@ exports.login = async (req, res) => {
 
 // post creation
 exports.postcreation = async (req, res) => {
-  await Post.create({
-    postname: req.body.postname,
-    postcontent: req.body.postcontent,
-
-    postedBy: await User.findOne(
+  await Post.create({ postname: req.body.postname, postcontent: req.body.postcontent,postedBy: await User.findOne(
       { _id: req.params.userid },
       {
         username: 1,

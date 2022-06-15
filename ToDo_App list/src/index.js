@@ -1,6 +1,5 @@
 const express =require("express");
 const mongoose = require("mongoose");
-const passport = require("passport");
 const userRoute = require("./route/userRoute");
 const taskRoute = require("./route/taskRoute");
 
@@ -9,12 +8,11 @@ require("dotenv").config();
 const app= express();
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
-app.use(passport.initialize());     //passport initialize
 
-mongoose.connect("mongodb://localhost/ToDodb");   // mongodb connection
+mongoose.connect("mongodb://localhost/ToDoapp");   // mongodb connection
 var db = mongoose.connection;
 db.on('error',()=>console.log("error in connecting database"));
-db.once('open',()=>console.log("conneted to database"));
+db.once('open',()=>console.log("connected to database"));
 
 app.use('/user', userRoute)   // user routing url
 app.use('/task',taskRoute)    // task routing url 
