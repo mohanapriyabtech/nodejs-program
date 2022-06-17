@@ -1,85 +1,73 @@
 const bcrypt = require("bcrypt");
-const User = require("../../model/userSchema");
-const Task = require("../../model/taskSchema");
+const userSchema = require("../../model/userSchema");
+const taskSchema = require("../../model/taskSchema");
 const jwt = require("jsonwebtoken");
-const sendMail =require("../../helper/mailFunction").sendMail
+const sendMail = require("../../helper/mailFunction").sendMail;
 
 /*user registration with basic details*/
 exports.signUp = async (req, res) => {
+  const body = req.body;
 
-   const body = req.body;
+  if (!(body.email && body.password)) {
+    return res.status(400).send({ error: "data not formatted properly" });
+  }
 
-    if (!(body.email && body.password)) {
-      return res.status(400).send({ error: "data not formatted properly" });
-    }
-    
-    const salt =await bcrypt.genSalt(10);
-    const hashedpassword=await bcrypt.hash(body.password,salt)
+  const salt = await bcrypt.genSalt(10);
+  const hashedpassword = await bcrypt.hash(body.password, salt);
 
-  
-     await User.create(
-       { 
-         email:body.email, 
-        fullName:body.fullName, 
-        userName:body.userName, 
-        password:hashedpassword 
-      })
-      .then((user) => {
-  
-         console.log(" register completed");
-         res.send(user);
-      })                           
-      .catch((err) => {
-        res.send(err.message);
-      });
-    }
-
+  await userSchema
+    .create({
+      email: body.email,
+      fullName: body.fullName,
+      userName: body.userName,
+      password: hashedpassword,
+    })
+    .then((user) => {
+      console.log(" register completed");
+      res.send(user);
+    })
+    .catch((err) => {
+      res.send(err.message);
+    });
+};
 
 /**Login the appropriate with their E-mail and Password
  * Password has been securely stored with bcrypt method
  */
 exports.logIn = async (req, res) => {
+  const body = req.body;
+  var otp = `${Math.floor(1000 + Math.random() * 9000)}`; //otp formula
 
-  
-    const body = req.body;
-    var otp = `${Math.floor(1000 + Math.random() * 9000)}`; //otp formula
+  const user = await userSchema.findOne({ email: body.email });
+  if (user) {
+    const validPassword = await bcrypt.compare(body.password, user.password);
 
-    const user = await User.findOne({ email: body.email });
-    if (user) {
-      
-      const validPassword = await bcrypt.compare(body.password, user.password);
-
-      if (validPassword) {
-
-        res.status(200).json({ message:  "we have sent a otp via Email" });
-        await User.findOneAndUpdate({ email: user.email  }, { otp: otp })
-        sendMail(user.email,otp) 
-      
-      } 
-      else {
-        res.status(400).json({ error: "Invalid Password" });
-      }
+    if (validPassword) {
+      res.status(200).json({ message: "we have sent a otp via Email" });
+      await User.findOneAndUpdate({ email: user.email }, { otp: otp });
+      sendMail(user.email, otp);
     } else {
-      res.json({ error: "User does not exist" });
-    
+      res.status(400).json({ error: "Invalid Password" });
     }
-    }
+  } else {
+    res.json({ error: "User does not exist" });
+  }
+};
 
 // otp verification for particular Email id
 
 exports.otpVerify = async (req, res) => {
+  const email = req.body.email;
+  const otp = req.body.otp;
 
-  const email =req.body.email ;
-  const otp =req.body.otp ;
-
-  await User.findOne({ email: email })
-  .then(async user => {
-
+  await userSchema.findOne({ email: email }).then(async (user) => {
     if (user.otp == otp) {
+      await userSchema.findOneAndUpdate(
+        { email: user.email },
+        { $set: { otp: 0 } }
+      );
 
-      await User.findOneAndUpdate({ email:user.email },{$set:{otp:0}})
-       
-       const token = jwt.sign({ email: user.email }, "secretkey", {
+      const token = jwt.sign({ email: user.email }, "secretkey", {
         algorithm: "HS256",
         expiresIn: "2d",
       });
@@ -87,44 +75,42 @@ exports.otpVerify = async (req, res) => {
         message: "login success",
         token: "bearer " + token,
       });
-    } else{
-      res.send("incorrect otp ")
+    } else {
+      res.send("incorrect otp ");
     }
-  
   });
 };
 
 /**Update the User details by calling with their id */
 
 exports.updateUser = async (req, res) => {
-
   const body = req.body;
-  const userid = req.params.userid ;
-  const hashedpassword=await bcrypt.hash(body.password,10)
-  const user =await User.findByIdAndUpdate({ _id: userid },{$set:{fullName:body.fullName,password:hashedpassword}},{new:true})
-   if (user) {
-        
-        console.log("user updated successfully");
-        res.status(200).send({ message: "user details updated", updatedDetails:user });
-         
-      }
-       else {
-        res.status(404).send({ message: "user does not exist " });
-      }
-    
+  const userid = req.params.userid;
+  const hashedpassword = await bcrypt.hash(body.password, 10);
+  const user = await userSchema.findByIdAndUpdate(
+    { _id: userid },
+    { $set: { fullName: body.fullName, password: hashedpassword } },
+    { new: true }
+  );
+  if (user) {
+    console.log("user updated successfully");
+    res
+      .status(200)
+      .send({ message: "user details updated", updatedDetails: user });
+  } else {
+    res.status(404).send({ message: "user does not exist " });
+  }
 };
 
 /**To delete User with their -id */
 
 exports.deleteUser = async (req, res) => {
-
-  await User.findByIdAndDelete({ _id: req.params.userid }, { new: true })
+  await userSchema
+    .findByIdAndDelete({ _id: req.params.userid }, { new: true })
     .then((user) => {
-      
       if (!user) {
         res.status(400).send(req.params.userid + " was not found");
-      } 
-      else {
+      } else {
         console.log("user deleted successfully");
         res.status(200).send(req.params.userid + " was deleted.");
       }
@@ -137,16 +123,14 @@ exports.deleteUser = async (req, res) => {
 //find the task details by user
 
 exports.findTask = async (req, res) => {
+  const userId = req.params.userid;
 
-  const userid =req.params.userid ;
-
-  await User.find({ _id: userid }).populate("taskDetails")
+  await userSchema
+    .find({ _id: userId })
+    .populate("taskDetails")
     .then((user) => {
-       if(user){
-      
-         res.json({message:"task details here",
-          task:user,
-        });
+      if (user) {
+        res.json({ message: "task details here", task: user });
         console.log(user);
       } else {
         res.send("invalid userid");
